@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "title": "Sunn Raha Hai",
+    "artist": "Ankit Tiwari",
+    "url": "/songs/Sunn Raha Hai.mp3",
+    "cover": "/covers/Sun Raha Hai.jpg"
+  },
+  {
+    "id": 2,
+    "title": "Galliyan",
+    "artist": "Ankit Tiwari",
+    "url": "/songs/Galliyan.mp3",
+    "cover": "/covers/Galliyan.jpg"
+  },
+  {
+    "id": 3,
+    "title": "Raanjhan",
+    "artist": "Traditional / Various",
+    "url": "/songs/Raanjhan.mp3",
+    "cover": "/covers/Raanjhan.jpg"
+  },
+  {
+    "id": 4,
+    "title": "Jug Jug Jeeve",
+    "artist": "Shankar Mahadevan",
+    "url": "/songs/Jug Jug Jeeve.mp3",
+    "cover": "/covers/Jug Jug Jeeve.jpg"
+  },
+  {
+    "id": 5,
+    "title": "Jiyein Kyun",
+    "artist": "Papon",
+    "url": "/songs/Jiyein Kyun.mp3",
+    "cover": "/covers/Jiyein Kyun.jpg"
+  },
+  {
+    "id": 6,
+    "title": "Pehle Bhi Main",
+    "artist": "Vishal Mishra",
+    "url": "/songs/Pehle Bhi Main.mp3",
+    "cover": "/covers/Pehle Bhi Main.jpg"
+  },
+  {
+    "id": 7,
+    "title": "Saari Duniya Jalaa Denge",
+    "artist": "B Praak",
+    "url": "/songs/Saari Duniya Jalaa Denge.mp3",
+    "cover": "/covers/Saari Duniya Jala Denge.jpg"
+  },
+  {
+    "id": 8,
+    "title": "Har Kisi Ko",
+    "artist": "Arijit Singh",
+    "url": "/songs/Har Kisi Ko.mp3",
+    "cover": "/covers/Har Kisi Ko.jpg"
+  },
+  {
+    "id": 9,
+    "title": "Tum Hi Ho",
+    "artist": "Arijit Singh",
+    "url": "/songs/Tum Hi Ho.mp3",
+    "cover": "/covers/Tum Hi Ho.jpeg"
+  },
+  {
+    "id": 10,
+    "title": "Raabta",
+    "artist": "Arijit Singh",
+    "url": "/songs/Raabta.mp3",
+    "cover": "/covers/Raabta.jpg"
+  },
+  {
+    "id": 11,
+    "title": "Aasan Nahin Yahan",
+    "artist": "Arijit Singh",
+    "url": "/songs/Aasan Nahin Yahan.mp3",
+    "cover": "/covers/Aasan Nahin Yahan.jpg"
+  },
+  {
+    "id": 12,
+    "title": "Piya Aaye Na",
+    "artist": "KK, Tulsi Kumar",
+    "url": "/songs/Piya Aaye Na.mp3",
+    "cover": "/covers/Piya Aaye Na.jpg"
+  }
+]
