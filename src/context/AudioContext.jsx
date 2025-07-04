@@ -21,6 +21,8 @@ export const AudioProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [playlist, setPlaylist] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -29,7 +31,10 @@ export const AudioProvider = ({ children }) => {
 
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => setDuration(audio.duration || 0);
-    const handleEnded = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      playNext();
+    };
     const handleLoadedData = () => setDuration(audio.duration || 0);
 
     audio.addEventListener("timeupdate", updateTime);
@@ -45,7 +50,7 @@ export const AudioProvider = ({ children }) => {
     };
   }, [currentSong]);
 
-  const playSong = (song) => {
+  const playSong = (song, songList = []) => {
     if (currentSong?.id === song.id && isPlaying) {
       // If same song is playing, pause it
       const audio = audioRef.current;
@@ -54,8 +59,40 @@ export const AudioProvider = ({ children }) => {
         setIsPlaying(false);
       }
     } else {
+      // Update playlist if provided
+      if (songList.length > 0) {
+        setPlaylist(songList);
+        const index = songList.findIndex(s => s.id === song.id);
+        setCurrentIndex(index >= 0 ? index : 0);
+      }
       // Play new song or resume paused song
       setCurrentSong(song);
+      setIsPlaying(true);
+    }
+  };
+
+  const playNext = () => {
+    if (playlist.length === 0) return;
+    
+    const nextIndex = (currentIndex + 1) % playlist.length;
+    const nextSong = playlist[nextIndex];
+    
+    if (nextSong) {
+      setCurrentIndex(nextIndex);
+      setCurrentSong(nextSong);
+      setIsPlaying(true);
+    }
+  };
+
+  const playPrevious = () => {
+    if (playlist.length === 0) return;
+    
+    const prevIndex = currentIndex === 0 ? playlist.length - 1 : currentIndex - 1;
+    const prevSong = playlist[prevIndex];
+    
+    if (prevSong) {
+      setCurrentIndex(prevIndex);
+      setCurrentSong(prevSong);
       setIsPlaying(true);
     }
   };
@@ -81,16 +118,54 @@ export const AudioProvider = ({ children }) => {
     }
   };
 
+  const stopSong = () => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    setIsPlaying(false);
+    setCurrentSong(null);
+    setCurrentTime(0);
+  };
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentSong) return;
 
     if (isPlaying) {
-      audio.play().catch(() => setIsPlaying(false));
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          console.log('Autoplay prevented');
+          setIsPlaying(false);
+        });
+      }
     } else {
       audio.pause();
     }
   }, [isPlaying, currentSong]);
+
+  // Handle page visibility changes to maintain audio state
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const audio = audioRef.current;
+      if (!audio || !currentSong) return;
+      
+      if (document.hidden) {
+        // Page is hidden, but don't pause audio
+        // Audio should continue playing in background
+      } else {
+        // Page is visible again
+        if (isPlaying && audio.paused) {
+          audio.play().catch(() => console.log('Resume failed'));
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [currentSong, isPlaying]);
 
   return (
     <AudioContext.Provider
@@ -99,18 +174,27 @@ export const AudioProvider = ({ children }) => {
         isPlaying,
         currentTime,
         duration,
+        playlist,
+        currentIndex,
         playSong,
         togglePlayPause,
         seekTo,
+        playNext,
+        playPrevious,
+        stopSong,
       }}
     >
       {children}
-      {currentSong && currentSong.url && (
+      {currentSong && (
         <audio
           ref={audioRef}
-          src={currentSong.url}
+          src={currentSong.url || ''}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
+          onError={() => {
+            console.log('Audio playback error - no valid source');
+            setIsPlaying(false);
+          }}
         />
       )}
     </AudioContext.Provider>

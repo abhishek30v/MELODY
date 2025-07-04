@@ -210,6 +210,42 @@
   display: none;
 }
 
+.spotify-song-details {
+  position: relative;
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.favorite-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.favorite-btn.favorited {
+  background: rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.favorite-btn.favorited:hover {
+  background: rgba(255, 107, 107, 0.3);
+}
+
 .spotify-card.playing {
   border: 2.5px solid #1db954;
   box-shadow: 0 0 0 4px #1db95422, 0 16px 48px 0 #1db95444, 0 2px 8px 0 #0002;

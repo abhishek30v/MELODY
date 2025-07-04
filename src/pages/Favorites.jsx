@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import "./Favorites.css";
-import { useYouTubePlayer } from "../context/YouTubePlayerContext";
+import { useAudio } from "../context/AudioContext";
 
 function Favorites() {
   const [favorites, setFavorites] = useState([]);
-  const [currentPlaying, setCurrentPlaying] = useState(null);
-  const { play: playYouTube } = useYouTubePlayer();
+  const { currentSong, isPlaying, playSong } = useAudio();
 
   useEffect(() => {
     loadFavorites();
@@ -29,15 +28,22 @@ function Favorites() {
     localStorage.removeItem("melody-favorites");
   };
 
-  const handlePlayVideo = (song) => {
-    setCurrentPlaying(song.id);
-    playYouTube({
+  const handlePlay = (song) => {
+    const songData = {
       id: song.id,
-      youtubeId: song.youtubeId,
       title: song.title,
-      thumbnail: song.artwork,
-      channelTitle: song.artist,
-    });
+      artist: song.artist,
+      cover: song.artwork,
+      url: song.url || '', // Include URL for playback
+    };
+    const playlistData = favorites.map(fav => ({
+      id: fav.id,
+      title: fav.title,
+      artist: fav.artist,
+      cover: fav.artwork,
+      url: fav.url || '', // Include URL for each song in playlist
+    }));
+    playSong(songData, playlistData);
   };
 
   return (
@@ -71,9 +77,9 @@ function Favorites() {
             <div
               key={song.id}
               className={`favorite-card spotify-card glass-effect hover-lift${
-                currentPlaying === song.id ? " playing" : ""
+                currentSong?.id === song.id ? " playing" : ""
               }`}
-              onClick={() => handlePlayVideo(song)}
+              onClick={() => handlePlay(song)}
               style={{ cursor: "pointer", position: "relative" }}
             >
               <div className="song-artwork" style={{ position: "relative" }}>
@@ -83,7 +89,7 @@ function Favorites() {
                   className="artwork-image spotify-song-cover"
                 />
                 <div className="favorite-play-overlay">
-                  {currentPlaying === song.id ? (
+                  {currentSong?.id === song.id && isPlaying ? (
                     <span className="favorite-play-icon playing">⏸️</span>
                   ) : (
                     <span className="favorite-play-icon">▶️</span>

@@ -120,8 +120,8 @@ function App() {
               </Routes>
             </div>
             <StickyYouTubePlayer />
-            <AudioPlayer />
           </Router>
+          <AudioPlayer />
         </div>
       </YouTubePlayerProvider>
     </AudioProvider>

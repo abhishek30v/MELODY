@@ -6,6 +6,7 @@ import "./Songs.css";
 function Songs() {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState([]);
   const { currentSong, isPlaying, playSong } = useAudio();
   const [showController, setShowController] = useState(true);
 
@@ -17,10 +18,44 @@ function Songs() {
       setLoading(false);
     };
     fetchSongs();
+    loadFavorites();
   }, []);
 
+  const loadFavorites = () => {
+    const saved = localStorage.getItem('melody-favorites');
+    if (saved) {
+      setFavorites(JSON.parse(saved));
+    }
+  };
+
+  const toggleFavorite = (song) => {
+    const songData = {
+      id: song.id,
+      title: song.title,
+      artist: song.artist,
+      artwork: song.cover,
+      url: song.url, // Include URL for playback
+    };
+
+    const isFavorite = favorites.some(fav => fav.id === song.id);
+    let newFavorites;
+
+    if (isFavorite) {
+      newFavorites = favorites.filter(fav => fav.id !== song.id);
+    } else {
+      newFavorites = [...favorites, songData];
+    }
+
+    setFavorites(newFavorites);
+    localStorage.setItem('melody-favorites', JSON.stringify(newFavorites));
+  };
+
+  const isFavorite = (songId) => {
+    return favorites.some(fav => fav.id === songId);
+  };
+
   const handlePlay = (song) => {
-    playSong(song);
+    playSong(song, songs);
     setShowController(true);
   };
 
@@ -95,6 +130,16 @@ function Songs() {
             <div className="spotify-song-details">
               <h3 className="spotify-song-title">{song.title}</h3>
               <p className="spotify-song-artist">{song.artist}</p>
+              <button
+                className={`favorite-btn ${isFavorite(song.id) ? 'favorited' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(song);
+                }}
+                title={isFavorite(song.id) ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                {isFavorite(song.id) ? '❤️' : '🤍'}
+              </button>
             </div>
           </div>
         ))}

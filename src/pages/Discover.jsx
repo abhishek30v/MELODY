@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import "./Discover.css";
 import config from "../services/config";
 import { useYouTubePlayer } from "../context/YouTubePlayerContext";
+import { useAudio } from "../context/AudioContext";
 
 // Using YouTube's public search without API key
 
@@ -13,10 +14,13 @@ function Discover() {
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState("");
   const { play: playYouTube } = useYouTubePlayer();
+  const { stopSong } = useAudio();
 
   useEffect(() => {
+    // Stop any playing audio when entering Discovery section
+    stopSong();
     loadFavorites();
-  }, []);
+  }, [stopSong]);
 
   useEffect(() => {
     // On page load, do not show demo results

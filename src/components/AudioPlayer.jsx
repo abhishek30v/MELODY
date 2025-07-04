@@ -23,6 +23,8 @@ const AudioPlayer = () => {
   };
 
   const handleMouseDown = (e) => {
+    e.preventDefault();
+    
     const handleMouseMove = (e) => {
       handleSeek(e);
     };
@@ -34,6 +36,8 @@ const AudioPlayer = () => {
     
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+    
+    // Only seek on initial mouse down, not on every move
     handleSeek(e);
   };
 
@@ -57,7 +61,7 @@ const AudioPlayer = () => {
           
           <div className="progress-container">
             <span className="time">{formatTime(currentTime)}</span>
-            <div className="progress-bar" onClick={handleSeek} onMouseDown={handleMouseDown}>
+            <div className="progress-bar" onMouseDown={handleMouseDown}>
               <div className="progress-fill" style={{ width: `${progressPercent}%` }}>
                 <div className="progress-thumb" />
               </div>
