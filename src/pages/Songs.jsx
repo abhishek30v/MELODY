@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchBollywoodSongs } from "../services/musicService";
 import { useAudio } from "../context/AudioContext";
+import { useYouTubePlayer } from "../context/YouTubePlayerContext";
 import "./Songs.css";
 
 function Songs() {
@@ -8,6 +9,7 @@ function Songs() {
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
   const { currentSong, isPlaying, playSong } = useAudio();
+  const { close: closeYouTube } = useYouTubePlayer();
   const [showController, setShowController] = useState(true);
 
   useEffect(() => {
@@ -19,10 +21,13 @@ function Songs() {
     };
     fetchSongs();
     loadFavorites();
-  }, []);
+
+    // Close any YouTube player when entering Songs section
+    closeYouTube();
+  }, [closeYouTube]);
 
   const loadFavorites = () => {
-    const saved = localStorage.getItem('melody-favorites');
+    const saved = localStorage.getItem("melody-favorites");
     if (saved) {
       setFavorites(JSON.parse(saved));
     }
@@ -37,25 +42,26 @@ function Songs() {
       url: song.url, // Include URL for playback
     };
 
-    const isFavorite = favorites.some(fav => fav.id === song.id);
+    const isFavorite = favorites.some((fav) => fav.id === song.id);
     let newFavorites;
 
     if (isFavorite) {
-      newFavorites = favorites.filter(fav => fav.id !== song.id);
+      newFavorites = favorites.filter((fav) => fav.id !== song.id);
     } else {
       newFavorites = [...favorites, songData];
     }
 
     setFavorites(newFavorites);
-    localStorage.setItem('melody-favorites', JSON.stringify(newFavorites));
+    localStorage.setItem("melody-favorites", JSON.stringify(newFavorites));
   };
 
   const isFavorite = (songId) => {
-    return favorites.some(fav => fav.id === songId);
+    return favorites.some((fav) => fav.id === songId);
   };
 
   const handlePlay = (song) => {
-    playSong(song, songs);
+    // Enable auto-play for Songs section when playing from the list
+    playSong(song, songs, true);
     setShowController(true);
   };
 
@@ -131,14 +137,20 @@ function Songs() {
               <h3 className="spotify-song-title">{song.title}</h3>
               <p className="spotify-song-artist">{song.artist}</p>
               <button
-                className={`favorite-btn ${isFavorite(song.id) ? 'favorited' : ''}`}
+                className={`favorite-btn ${
+                  isFavorite(song.id) ? "favorited" : ""
+                }`}
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleFavorite(song);
                 }}
-                title={isFavorite(song.id) ? 'Remove from favorites' : 'Add to favorites'}
+                title={
+                  isFavorite(song.id)
+                    ? "Remove from favorites"
+                    : "Add to favorites"
+                }
               >
-                {isFavorite(song.id) ? '❤️' : '🤍'}
+                {isFavorite(song.id) ? "❤️" : "🤍"}
               </button>
             </div>
           </div>

@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import "./Favorites.css";
 import { useAudio } from "../context/AudioContext";
+import { useYouTubePlayer } from "../context/YouTubePlayerContext";
 
 function Favorites() {
   const [favorites, setFavorites] = useState([]);
   const { currentSong, isPlaying, playSong } = useAudio();
+  const { play: playYouTube } = useYouTubePlayer();
 
   useEffect(() => {
     loadFavorites();
@@ -29,21 +31,45 @@ function Favorites() {
   };
 
   const handlePlay = (song) => {
-    const songData = {
-      id: song.id,
-      title: song.title,
-      artist: song.artist,
-      cover: song.artwork,
-      url: song.url || '', // Include URL for playback
-    };
-    const playlistData = favorites.map(fav => ({
-      id: fav.id,
-      title: fav.title,
-      artist: fav.artist,
-      cover: fav.artwork,
-      url: fav.url || '', // Include URL for each song in playlist
-    }));
-    playSong(songData, playlistData);
+    // If the favorite has a youtubeId, play with YouTube player
+    if (song.youtubeId) {
+      const videoData = {
+        id: song.youtubeId,
+        youtubeId: song.youtubeId,
+        title: song.title,
+        thumbnail: song.artwork,
+        channelTitle: song.artist,
+      };
+      const playlistData = favorites
+        .filter((fav) => fav.youtubeId)
+        .map((fav) => ({
+          id: fav.youtubeId,
+          youtubeId: fav.youtubeId,
+          title: fav.title,
+          thumbnail: fav.artwork,
+          channelTitle: fav.artist,
+        }));
+      playYouTube(videoData, playlistData);
+    } else {
+      // Otherwise, play with audio player
+      const songData = {
+        id: song.id,
+        title: song.title,
+        artist: song.artist,
+        cover: song.artwork,
+        url: song.url || "",
+      };
+      const playlistData = favorites
+        .filter((fav) => !fav.youtubeId)
+        .map((fav) => ({
+          id: fav.id,
+          title: fav.title,
+          artist: fav.artist,
+          cover: fav.artwork,
+          url: fav.url || "",
+        }));
+      playSong(songData, playlistData);
+    }
   };
 
   return (

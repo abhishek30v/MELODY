@@ -107,9 +107,6 @@ function Home() {
                     abhishekvermatechie@gmail.com
                   </a>
                 </li>
-                <li>
-                  Contact: <a href="tel:9027401559">9027401559</a>
-                </li>
               </ul>
             </div>
 

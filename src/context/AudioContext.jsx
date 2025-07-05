@@ -23,7 +23,39 @@ export const AudioProvider = ({ children }) => {
   const [duration, setDuration] = useState(0);
   const [playlist, setPlaylist] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(false); // Auto-play for Songs section
   const audioRef = useRef(null);
+
+  // Custom event to notify other players to stop
+  const notifyOtherPlayers = () => {
+    window.dispatchEvent(
+      new CustomEvent("audioPlayerStarted", {
+        detail: { source: "audio", songId: currentSong?.id },
+      })
+    );
+  };
+
+  // Listen for other players starting
+  useEffect(() => {
+    const handleOtherPlayerStarted = (event) => {
+      if (event.detail.source !== "audio" && isPlaying) {
+        // Another player (YouTube) started, stop this one
+        const audio = audioRef.current;
+        if (audio) {
+          audio.pause();
+          setIsPlaying(false);
+        }
+      }
+    };
+
+    window.addEventListener("audioPlayerStarted", handleOtherPlayerStarted);
+    return () => {
+      window.removeEventListener(
+        "audioPlayerStarted",
+        handleOtherPlayerStarted
+      );
+    };
+  }, [isPlaying]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -33,7 +65,9 @@ export const AudioProvider = ({ children }) => {
     const updateDuration = () => setDuration(audio.duration || 0);
     const handleEnded = () => {
       setIsPlaying(false);
-      playNext();
+      if (autoPlay) {
+        playNext();
+      }
     };
     const handleLoadedData = () => setDuration(audio.duration || 0);
 
@@ -48,9 +82,9 @@ export const AudioProvider = ({ children }) => {
       audio.removeEventListener("loadeddata", handleLoadedData);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [currentSong]);
+  }, [currentSong, autoPlay]);
 
-  const playSong = (song, songList = []) => {
+  const playSong = (song, songList = [], enableAutoPlay = false) => {
     if (currentSong?.id === song.id && isPlaying) {
       // If same song is playing, pause it
       const audio = audioRef.current;
@@ -62,38 +96,48 @@ export const AudioProvider = ({ children }) => {
       // Update playlist if provided
       if (songList.length > 0) {
         setPlaylist(songList);
-        const index = songList.findIndex(s => s.id === song.id);
+        const index = songList.findIndex((s) => s.id === song.id);
         setCurrentIndex(index >= 0 ? index : 0);
       }
+
+      // Set auto-play based on parameter
+      setAutoPlay(enableAutoPlay);
+
       // Play new song or resume paused song
       setCurrentSong(song);
       setIsPlaying(true);
+
+      // Notify other players to stop
+      notifyOtherPlayers();
     }
   };
 
   const playNext = () => {
     if (playlist.length === 0) return;
-    
+
     const nextIndex = (currentIndex + 1) % playlist.length;
     const nextSong = playlist[nextIndex];
-    
+
     if (nextSong) {
       setCurrentIndex(nextIndex);
       setCurrentSong(nextSong);
       setIsPlaying(true);
+      notifyOtherPlayers();
     }
   };
 
   const playPrevious = () => {
     if (playlist.length === 0) return;
-    
-    const prevIndex = currentIndex === 0 ? playlist.length - 1 : currentIndex - 1;
+
+    const prevIndex =
+      currentIndex === 0 ? playlist.length - 1 : currentIndex - 1;
     const prevSong = playlist[prevIndex];
-    
+
     if (prevSong) {
       setCurrentIndex(prevIndex);
       setCurrentSong(prevSong);
       setIsPlaying(true);
+      notifyOtherPlayers();
     }
   };
 
@@ -107,6 +151,7 @@ export const AudioProvider = ({ children }) => {
     } else {
       audio.play();
       setIsPlaying(true);
+      notifyOtherPlayers();
     }
   };
 
@@ -127,23 +172,35 @@ export const AudioProvider = ({ children }) => {
     setIsPlaying(false);
     setCurrentSong(null);
     setCurrentTime(0);
+    setAutoPlay(false);
+  };
+
+  const toggleAutoPlay = () => {
+    setAutoPlay((prev) => !prev);
   };
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentSong) return;
 
+    let playPromise;
     if (isPlaying) {
-      const playPromise = audio.play();
+      playPromise = audio.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          console.log('Autoplay prevented');
+        playPromise.catch((error) => {
+          console.warn("Autoplay prevented:", error.message);
           setIsPlaying(false);
         });
       }
     } else {
       audio.pause();
     }
+
+    return () => {
+      if (playPromise && playPromise.catch) {
+        playPromise.catch(() => {}); // Cleanup any pending promise
+      }
+    };
   }, [isPlaying, currentSong]);
 
   // Handle page visibility changes to maintain audio state
@@ -151,20 +208,23 @@ export const AudioProvider = ({ children }) => {
     const handleVisibilityChange = () => {
       const audio = audioRef.current;
       if (!audio || !currentSong) return;
-      
+
       if (document.hidden) {
         // Page is hidden, but don't pause audio
         // Audio should continue playing in background
       } else {
         // Page is visible again
         if (isPlaying && audio.paused) {
-          audio.play().catch(() => console.log('Resume failed'));
+          audio
+            .play()
+            .catch((error) => console.warn("Resume failed:", error.message));
         }
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [currentSong, isPlaying]);
 
   return (
@@ -176,23 +236,25 @@ export const AudioProvider = ({ children }) => {
         duration,
         playlist,
         currentIndex,
+        autoPlay,
         playSong,
         togglePlayPause,
         seekTo,
         playNext,
         playPrevious,
         stopSong,
+        toggleAutoPlay,
       }}
     >
       {children}
       {currentSong && (
         <audio
           ref={audioRef}
-          src={currentSong.url || ''}
+          src={currentSong.url || ""}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
-          onError={() => {
-            console.log('Audio playback error - no valid source');
+          onError={(error) => {
+            console.warn("Audio playback error:", error);
             setIsPlaying(false);
           }}
         />

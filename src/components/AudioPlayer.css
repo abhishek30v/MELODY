@@ -15,7 +15,7 @@
 }
 
 .audio-player::before {
-  content: '';
+  content: "";
   position: fixed;
   bottom: 0;
   left: 0;
@@ -142,28 +142,129 @@
   opacity: 1;
 }
 
+/* Navigation buttons */
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  color: #fff;
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+/* Playlist info */
+.playlist-info {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 2px;
+}
+
+/* Player options */
+.player-options {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 20px;
+}
+
+/* Modern Autoplay Toggle Switch */
+.autoplay-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.autoplay-toggle-text {
+  color: #fff;
+  margin-right: 4px;
+}
+
+.autoplay-toggle-input {
+  display: none;
+}
+
+.autoplay-toggle-slider {
+  width: 38px;
+  height: 20px;
+  background: #444;
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.3s;
+  margin: 0 6px;
+  box-sizing: border-box;
+}
+
+.autoplay-toggle-label
+  .autoplay-toggle-input:checked
+  + .autoplay-toggle-slider {
+  background: #1db954;
+}
+
+.autoplay-toggle-slider::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.autoplay-toggle-label
+  .autoplay-toggle-input:checked
+  + .autoplay-toggle-slider::before {
+  transform: translateX(18px);
+}
+
+.autoplay-toggle-status {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: left;
+}
+
+/* Remove old auto-play-btn if not needed */
+.auto-play-btn {
+  display: none !important;
+}
+
 @media (max-width: 768px) {
   .audio-player {
     padding: 10px 15px;
   }
-  
+
   .player-content {
     gap: 15px;
   }
-  
+
   .song-info {
     min-width: 150px;
   }
-  
+
   .song-cover {
     width: 40px;
     height: 40px;
   }
-  
+
   .song-title {
     font-size: 13px;
   }
-  
+
   .song-artist {
     font-size: 11px;
   }

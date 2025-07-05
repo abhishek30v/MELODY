@@ -16,16 +16,26 @@ function Discover() {
   const { play: playYouTube } = useYouTubePlayer();
   const { stopSong } = useAudio();
 
+  // Load persisted search state on mount
   useEffect(() => {
-    // Stop any playing audio when entering Discovery section
     stopSong();
     loadFavorites();
+    const savedSearch = localStorage.getItem("melody-discover-search");
+    const savedResults = localStorage.getItem("melody-discover-results");
+    if (savedSearch) setSearchTerm(savedSearch);
+    if (savedResults) setSearchResults(JSON.parse(savedResults));
   }, [stopSong]);
 
+  // Persist search state on change
   useEffect(() => {
-    // On page load, do not show demo results
-    setSearchResults([]);
-  }, []);
+    localStorage.setItem("melody-discover-search", searchTerm);
+  }, [searchTerm]);
+  useEffect(() => {
+    localStorage.setItem(
+      "melody-discover-results",
+      JSON.stringify(searchResults)
+    );
+  }, [searchResults]);
 
   const searchYouTube = useCallback(async (query) => {
     if (!query.trim()) return;
@@ -97,13 +107,23 @@ function Discover() {
 
   const handlePlayVideo = (video) => {
     setCurrentPlaying(video.id);
-    playYouTube({
+    const videoData = {
       id: video.id,
       youtubeId: video.id,
       title: video.title,
       thumbnail: video.thumbnail,
       channelTitle: video.channelTitle,
-    });
+    };
+    playYouTube(
+      videoData,
+      searchResults.map((v) => ({
+        id: v.id,
+        youtubeId: v.id,
+        title: v.title,
+        thumbnail: v.thumbnail,
+        channelTitle: v.channelTitle,
+      }))
+    );
   };
 
   const isFavorite = (videoId) => {
@@ -191,7 +211,6 @@ function Discover() {
                   }`}
                 >
                   {isFavorite(video.id) ? "❤️" : "🤍"}
-                  {isFavorite(video.id) ? "Favorited" : "Add to Favorites"}
                 </button>
               </div>
             </div>
